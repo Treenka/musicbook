@@ -5,6 +5,7 @@
 import json
 import dateutil.parser
 import babel
+from sqlalchemy.sql.schema import ForeignKey
 import config
 from flask import Flask, render_template, request, Response, flash, redirect, url_for
 from flask_moment import Moment
@@ -47,6 +48,10 @@ class Venue(db.Model):
     phone = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    genres = db.Column(db.String(50))
+    website = db.Column(db.String(120))
+    seeking_description = db.Column(db.String(250))
+    shows = db.relationship('show', secondary='Shows', backref='venue')
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
@@ -62,10 +67,17 @@ class Artist(db.Model):
     genres = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    website = db.Column(db.String(120))
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+
+
+Show = db.Table('Shows',
+                db.Column('venue_id', db.Integer, ForeignKey('Venue.id')),
+                db.Column('artist_id', db.Integer, ForeignKey('Artist.id')))
+
 
 #----------------------------------------------------------------------------#
 # Filters.
