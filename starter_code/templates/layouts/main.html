@@ -117,6 +117,34 @@
   <script>window.jQuery || document.write('<script type="text/javascript" src="/static/js/libs/jquery-1.11.1.min.js"><\/script>')</script>
   <script type="text/javascript" src="/static/js/libs/bootstrap-3.1.1.min.js" defer></script>
   <script type="text/javascript" src="/static/js/plugins.js" defer></script>
+  <script>
+    function delete_venue_btn_act() {
+            const delete_venue_btn = document.querySelectorAll('.delete-venue')
+            if (delete_venue_btn[0]){
+              const delete_venue = delete_venue_btn[0]
+              delete_venue.onclick = function(e) {
+                //e.preventDefault()
+                const venueId = e.target.dataset['id']
+                fetch('/venues/' + venueId, {
+                        method : 'DELETE',
+                        
+                    })
+                    .then(function(response) {
+                        return response.json();
+                    })
+                      .then(function(jsonResponse) {
+                        main_content = document.getElementById('content')
+                        while (main_content.firstChild) {
+                          main_content.removeChild(main_content.firstChild);
+                        }
+                        new_message = document.createElement('p')
+                        new_message.innerHTML = jsonResponse['message']
+                        main_content.appendChild(new_message)
+                      })
+                    }
+                }}
+    delete_venue_btn_act()
+  </script>
 
 </body>
 </html>
