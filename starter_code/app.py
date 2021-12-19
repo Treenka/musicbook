@@ -208,7 +208,7 @@ def venues():
                 venue_arena = {
                     'id': venue.id,
                     'name': venue.name,
-                    'num_upcoming_shows': 1
+                    'num_upcoming_shows': len(list(filter(lambda x: x.start_time > datetime.today(), venue.shows)))
                 }
                 venue_collection['venues'].append(venue_arena)
             new_data.append(venue_collection)
@@ -252,7 +252,7 @@ def search_venues():
             add_data = {
                 'id': venue.id,
                 'name': venue.name,
-                'num_upcoming_shows': 0
+                'num_upcoming_shows': len(list(filter(lambda x: x.start_time > datetime.today(), venue.shows)))
             }
             new_response['data'].append(add_data)
 
@@ -367,8 +367,10 @@ def show_venue(venue_id):
         new_data['seeking_talent'] = current_venue.seeking_talent
         new_data['seeking_description'] = current_venue.seeking_description
         new_data['image_link'] = current_venue.image_link
-        new_data['past_shows'] = []
-        new_data['upcoming_shows'] = []
+        new_data['past_shows'] = list(
+            filter(lambda x: x.start_time < datetime.today(), current_venue.shows))
+        new_data['upcoming_shows'] = list(
+            filter(lambda x: x.start_time > datetime.today(), current_venue.shows))
 
         past_shows = [
             show for show in current_venue.shows if show.start_time < datetime.today()]
@@ -582,14 +584,34 @@ def search_artists():
     # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
     # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
     # search for "band" should return "The Wild Sax Band".
-    response = {
-        "count": 1,
-        "data": [{
-            "id": 4,
-            "name": "Guns N Petals",
-            "num_upcoming_shows": 0,
-        }]
-    }
+
+    search_list = []
+    text = request.form.get('search_term', '')
+    count = 0
+
+    for artist in Artist.query.all():
+        if text.lower() in artist.name.lower():
+            search_list.append(artist)
+            count += 1
+
+    response = []
+    response['count'] = count
+    response['data'] = []
+
+    for artist in search_list:
+        response['data'].append({
+            'id': artist.id,
+            'name': artist.name,
+            'num_upcoming_shows': len(list(filter(lambda x: x.start_time > datetime.today(), artist.shows)))
+        })
+    # response = {
+    #     "count": 1,
+    #     "data": [{
+    #         "id": 4,
+    #         "name": "Guns N Petals",
+    #         "num_upcoming_shows": 0,
+    #     }]
+    # }
     return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
 
 
