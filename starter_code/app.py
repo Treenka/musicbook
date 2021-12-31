@@ -834,6 +834,18 @@ def edit_venue(venue_id):
 def edit_venue_submission(venue_id):
     # TODO: take values from the form submitted, and update existing
     # venue record with ID <venue_id> using the new attributes
+
+    venue = Venue.query.get(venue_id)
+    venue.name = request.form.get('name')
+    venue.city = request.form.get('city')
+    venue.state = request.form.get('state')
+    venue.phone = request.form.get('phone')
+    venue.genres = request.form.getlist('genres')
+    venue.facebook_link = request.form.get('facebook_link')
+    venue.image_link = request.form.get('image_link')
+    venue.website = request.form.get('website_link')
+    venue.seeking_venue = request.form.get('seeking_venue')
+    venue.seeking_description = request.form.get('seeking_description')
     return redirect(url_for('show_venue', venue_id=venue_id))
 
 #  Create Artist
@@ -851,6 +863,87 @@ def create_artist_submission():
     # called upon submitting the new artist listing form
     # TODO: insert form data as a new Venue record in the db, instead
     # TODO: modify data to be the data object returned from db insertion
+
+    # Try: insert the form data for a new artist object
+    # open the connection, save data to a var if necessary
+
+    try:
+        name = request.form.get('name')
+        city = request.form.get('city')
+        state = request.form.get('state')
+        address = request.form.get('address')
+        phone = request.form.get('phone')
+        genres = request.form.getlist('genres')
+        facebook_link = request.form.get('facebook_link')
+        image_link = request.form.get('image_link')
+        website_link = request.form.get('website_link')
+        seeking_talent = request.form.get('seeking_talent')
+        seeking_description = request.form.get('seeking_description')
+
+        genre_objects = []
+        all_genre_names = [genre.name for genre in Genre.query.all()]
+        for genre in genres:
+            if genre in all_genre_names:
+                go = Genre.query.filter_by(name=genre).all()[0]
+                genre_objects.append(go)
+            else:
+                new_genre = Genre(name=genre)
+                try:
+                    db.session.add(new_genre)
+                    db.session.commit()
+                    new_genre_success = True
+                except Exception as e:
+                    print(e)
+                    db.session.rollback()
+                    new_genre_success = False
+                finally:
+                    if new_genre_success:
+                        go = Genre.query.filter_by(name=genre).all()[0]
+                        genre_objects.append(go)
+                    else:
+                        flash('An error occurred. Venue ' +
+                              name + ' could not be listed.')
+                        return render_template('pages/home.html')
+        if seeking_talent == 'y':
+            seeking_talent = True
+        else:
+            seeking_talent = False
+
+        new_artist = Artist(
+            name=name,
+            city=city,
+            state=state,
+            phone=phone,
+            genres=genre_objects,
+            facebook_link=facebook_link,
+            website=website_link,
+            image_link=image_link,
+            seeking_venue=seeking_talent,
+            seeking_description=seeking_description
+
+        )
+
+        db.session.add(new_artist)
+        db.session.commit()
+        success = True
+    except Exception as e:
+        print(e)
+        db.session.rollback()
+        success = False
+    finally:
+        db.session.close()
+
+        if success:
+            flash('Artist ' + name + ' was successfully listed!')
+            return render_template('pages/home.html')
+        else:
+            flash('An error occurred. Artist ' +
+                  name + ' could not be listed.')
+            return render_template('pages/home.html')
+
+    # Except: close the send an error message
+
+    # Finally: close the connection
 
     # on successful db insert, flash success
     flash('Artist ' + request.form['name'] + ' was successfully listed!')
