@@ -26,7 +26,6 @@ from models import db, Venue, Show, Artist, Genre
 app = Flask(__name__)
 moment = Moment(app)
 app.config.from_object('config')
-#db = SQLAlchemy(app)
 db.init_app(app)
 
 # connect to a local postgresql database

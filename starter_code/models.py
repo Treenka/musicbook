@@ -1,27 +1,13 @@
 from sqlalchemy.sql.schema import ForeignKey
-import config
-from flask import Flask, render_template, request
-from flask import flash, redirect, url_for, jsonify
-from flask_moment import Moment
-from flask_migrate import Migrate, current
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
 
 # ----------------------------------------------------------------------------#
-# App Config.
+# SQLA Config.
 # ----------------------------------------------------------------------------#
 
-#app = Flask(__name__)
-#moment = Moment(app)
-# app.config.from_object('config')
-#db = SQLAlchemy(app)
+
 db = SQLAlchemy()
 
-# connect to a local postgresql database
-#app.config['SQLALCHEMY_DATABASE_URI'] = config.SQLALCHEMY_DATABASE_URI
-#app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-#migrate = Migrate(app, db)
 
 # ----------------------------------------------------------------------------#
 # Models.
@@ -29,7 +15,7 @@ db = SQLAlchemy()
 
 
 class Venue(db.Model):
-    __tablename__ = 'Venue'
+    __tablename__ = 'venues'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
@@ -55,7 +41,7 @@ class Venue(db.Model):
 
 
 class Artist(db.Model):
-    __tablename__ = 'Artist'
+    __tablename__ = 'artists'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
