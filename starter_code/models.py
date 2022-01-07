@@ -11,16 +11,17 @@ from datetime import datetime
 # App Config.
 # ----------------------------------------------------------------------------#
 
-app = Flask(__name__)
-moment = Moment(app)
-app.config.from_object('config')
-db = SQLAlchemy(app)
+#app = Flask(__name__)
+#moment = Moment(app)
+# app.config.from_object('config')
+#db = SQLAlchemy(app)
+db = SQLAlchemy()
 
 # connect to a local postgresql database
-app.config['SQLALCHEMY_DATABASE_URI'] = config.SQLALCHEMY_DATABASE_URI
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+#app.config['SQLALCHEMY_DATABASE_URI'] = config.SQLALCHEMY_DATABASE_URI
+#app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-migrate = Migrate(app, db)
+#migrate = Migrate(app, db)
 
 # ----------------------------------------------------------------------------#
 # Models.

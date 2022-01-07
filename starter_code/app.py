@@ -16,7 +16,7 @@ from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
 from datetime import datetime
-from models import Venue, Show, Artist, Genre
+from models import db, Venue, Show, Artist, Genre
 
 
 # ----------------------------------------------------------------------------#
@@ -26,7 +26,8 @@ from models import Venue, Show, Artist, Genre
 app = Flask(__name__)
 moment = Moment(app)
 app.config.from_object('config')
-db = SQLAlchemy(app)
+#db = SQLAlchemy(app)
+db.init_app(app)
 
 # connect to a local postgresql database
 app.config['SQLALCHEMY_DATABASE_URI'] = config.SQLALCHEMY_DATABASE_URI
@@ -66,12 +67,16 @@ def index():
 
 @app.route('/venues')
 def venues():
-    # num_upcoming_shows should be aggregated
+    # num_upcoming_shows aggregated
     # based on number of upcoming shows per venue.
 
+    # store all venues
     venues = Venue.query.all()
+
+    # store all states that venues are in
     states = list(set([venue.state for venue in venues]))
 
+    # create list for data to be displayed
     new_data = []
 
     for state in states:
