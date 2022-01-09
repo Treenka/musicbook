@@ -166,6 +166,7 @@ def show_venue(venue_id):
         new_data['upcoming_shows'] = []
 
         past_shows = Show.query.join(Venue).filter(
+            Venue.id == current_venue.id,
             Show.start_time < datetime.today()).all()
 
         if len(past_shows) > 0:
@@ -180,6 +181,7 @@ def show_venue(venue_id):
                 new_data['past_shows'].append(show_dict)
 
         upcoming_shows = Show.query.join(Venue).filter(
+            Venue.id == current_venue.id,
             Show.start_time > datetime.today()).all()
 
         if len(upcoming_shows) > 0:
