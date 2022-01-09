@@ -115,24 +115,23 @@ def search_venues():
     # "The Musical Hop" and "Park Square Live Music & Coffee"
     text = request.form.get('search_term', '')
 
-    new_response = {'count': 0, 'data': []}
+    results = Venue.query.filter(Venue.name.ilike('%' + text + '%')).all()
+    new_response = {'count': len(results), 'data': []}
 
-    for venue in Venue.query.all():
-        if text.lower() in venue.name.lower():
-            new_response['count'] += 1
-            add_data = {
-                'id': venue.id,
-                'name': venue.name,
-                'num_upcoming_shows': len(
-                    list(
-                        filter(
-                            lambda x: x.start_time > datetime.today(),
-                            venue.shows
-                        )
+    for venue in results:
+        add_data = {
+            'id': venue.id,
+            'name': venue.name,
+            'num_upcoming_shows': len(
+                list(
+                    filter(
+                        lambda x: x.start_time > datetime.today(),
+                        venue.shows
                     )
                 )
-            }
-            new_response['data'].append(add_data)
+            )
+        }
+        new_response['data'].append(add_data)
 
     return render_template(
         'pages/search_venues.html',
@@ -165,10 +164,9 @@ def show_venue(venue_id):
         new_data['image_link'] = current_venue.image_link
         new_data['past_shows'] = []
         new_data['upcoming_shows'] = []
-        past_shows = [
-            show for show in current_venue.shows
-            if show.start_time < datetime.today()
-        ]
+
+        past_shows = Show.query.join(Venue).filter(
+            Show.start_time < datetime.today()).all()
 
         if len(past_shows) > 0:
             for show in past_shows:
@@ -181,10 +179,8 @@ def show_venue(venue_id):
 
                 new_data['past_shows'].append(show_dict)
 
-        upcoming_shows = [
-            show for show in current_venue.shows
-            if show.start_time > datetime.today()
-        ]
+        upcoming_shows = Show.query.join(Venue).filter(
+            Show.start_time > datetime.today()).all()
 
         if len(upcoming_shows) > 0:
             for show in upcoming_shows:
