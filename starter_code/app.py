@@ -416,28 +416,34 @@ def show_artist(artist_id):
         )
     }
 
+    past_shows = Show.query.join(Artist).filter(
+        Artist.id == artist.id,
+        Show.start_time < datetime.today()
+    ).all()
     # add past_shows data
-    for show in artist.shows:
-        if show.start_time < datetime.today():
-            data['past_shows'].append(
-                {
-                    'venue_id': show.venue.id,
-                    'venue_name': show.venue.name,
-                    'venue_image_link': show.venue.image_link,
-                    'start_time': str(show.start_time)
-                }
-            )
+    for show in past_shows:
+        data['past_shows'].append(
+            {
+                'venue_id': show.venue.id,
+                'venue_name': show.venue.name,
+                'venue_image_link': show.venue.image_link,
+                'start_time': str(show.start_time)
+            }
+        )
     # add upcoming_shows data
-    for show in artist.shows:
-        if show.start_time > datetime.today():
-            data['upcoming_shows'].append(
-                {
-                    'venue_id': show.venue.id,
-                    'venue_name': show.venue.name,
-                    'venue_image_link': show.venue.image_link,
-                    'start_time': str(show.start_time)
-                }
-            )
+    upcoming_shows = Show.query.join(Artist).filter(
+        Artist.id == artist.id,
+        Show.start_time > datetime.today()
+    ).all()
+    for show in upcoming_shows:
+        data['upcoming_shows'].append(
+            {
+                'venue_id': show.venue.id,
+                'venue_name': show.venue.name,
+                'venue_image_link': show.venue.image_link,
+                'start_time': str(show.start_time)
+            }
+        )
 
     return render_template(
         'pages/show_artist.html',
