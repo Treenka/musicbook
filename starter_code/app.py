@@ -631,67 +631,50 @@ def create_artist_form():
 
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
-    # called upon submitting the new artist listing form
+    # calls upon submitting the new artist listing form
     # insert form data as a new
     # Venue record in the db, instead
     # modify data to be the data
     # object returned from db insertion
 
-    # Try: insert the form data for a new artist object
-    # open the connection, save data to a var if necessary
-
     try:
-        name = request.form.get('name')
-        city = request.form.get('city')
-        state = request.form.get('state')
-        phone = request.form.get('phone')
-        genres = request.form.getlist('genres')
-        facebook_link = request.form.get('facebook_link')
-        image_link = request.form.get('image_link')
-        website_link = request.form.get('website_link')
-        seeking_talent = request.form.get('seeking_talent')
-        seeking_description = request.form.get('seeking_description')
+        form = ArtistForm(request.form)
+        name = form.name.data
 
+        # create a list to hold the genres as objects
+        # add new genres to the db
         genre_objects = []
-        all_genre_names = [genre.name for genre in Genre.query.all()]
-        for genre in genres:
-            if genre in all_genre_names:
-                go = Genre.query.filter_by(name=genre).all()[0]
-                genre_objects.append(go)
-            else:
-                new_genre = Genre(name=genre)
+
+        for genre in form.genres.data:
+            if genre not in [gen.name for gen in Genre.query.all()]:
                 try:
+                    new_genre = Genre(name=genre)
                     db.session.add(new_genre)
-                    db.session.commit()
-                    new_genre_success = True
+                    genre_objects.append(new_genre)
                 except Exception as e:
                     print(e)
-                    db.session.rollback()
-                    new_genre_success = False
-                finally:
-                    if new_genre_success:
-                        go = Genre.query.filter_by(name=genre).all()[0]
-                        genre_objects.append(go)
-                    else:
-                        flash('An error occurred. Venue ' +
-                              name + ' could not be listed.')
-                        return render_template('pages/home.html')
-        if seeking_talent == 'y':
-            seeking_talent = True
+                    flash(f'An error occurred while entering a new Genre: {e}')
+                    return render_template('pages/home.html')
+            else:
+                genre_objects.append(Genre.query.filter(
+                    Genre.name == genre).all()[0])
+
+        if form.seeking_venue == 'y':
+            seeking_venue = True
         else:
-            seeking_talent = False
+            seeking_venue = False
 
         new_artist = Artist(
-            name=name,
-            city=city,
-            state=state,
-            phone=phone,
+            name=form.name.data,
+            city=form.city.data,
+            state=form.state.data,
+            phone=form.phone.data,
             genres=genre_objects,
-            facebook_link=facebook_link,
-            website=website_link,
-            image_link=image_link,
-            seeking_venue=seeking_talent,
-            seeking_description=seeking_description
+            facebook_link=form.facebook_link.data,
+            image_link=form.image_link.data,
+            website=form.website_link.data,
+            seeking_venue=seeking_venue,
+            seeking_description=form.seeking_description.data
 
         )
 
