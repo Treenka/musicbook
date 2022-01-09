@@ -523,6 +523,7 @@ def edit_artist_submission(artist_id):
         db.session.commit()
         success = True
     except Exception as e:
+        db.session.rollback()
         print(e)
         success = False
         error_message = e
@@ -607,6 +608,7 @@ def edit_venue_submission(venue_id):
         db.session.commit()
         success = True
     except Exception as e:
+        db.session.rollback()
         print(e)
         success = False
         error_message = e
