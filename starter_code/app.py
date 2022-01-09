@@ -459,28 +459,18 @@ def show_artist(artist_id):
 def edit_artist(artist_id):
     form = ArtistForm()
 
-    artist_to_edit = Artist.query.get(artist_id)
-
-    artist = {
-        'id': artist_to_edit.id,
-        'name': artist_to_edit.name,
-        'genres': artist_to_edit.genres,
-        'city': artist_to_edit.city,
-        'state': artist_to_edit.state,
-        'phone': artist_to_edit.phone,
-        'website': artist_to_edit.website,
-        'facebook_link': artist_to_edit.facebook_link,
-        'seeking_venue': artist_to_edit.seeking_venue,
-        'seeking_description': artist_to_edit.seeking_description,
-        'image_link': artist_to_edit.image_link
-    }
-
-    # populate form with fields from artist with ID < artist_id >
-    return render_template(
-        'forms/edit_artist.html',
-        form=form,
-        artist=artist_to_edit
-    )
+    try:
+        artist_to_edit = Artist.query.get(artist_id)
+        # populate form with fields from artist with ID < artist_id >
+        return render_template(
+            'forms/edit_artist.html',
+            form=form,
+            artist=artist_to_edit
+        )
+    except Exception as e:
+        print(e)
+        flash('An error occured. Could not locate Artist to edit.')
+        return render_template('pages/home.html')
 
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
