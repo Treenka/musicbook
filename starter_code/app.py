@@ -544,15 +544,20 @@ def edit_artist_submission(artist_id):
 def edit_venue(venue_id):
     form = VenueForm()
 
-    venue = Venue.query.get(venue_id)
+    try:
+        venue = Venue.query.get(venue_id)
 
-    # populate form with values from
-    # venue with ID <venue_id>
-    return render_template(
-        'forms/edit_venue.html',
-        form=form,
-        venue=venue
-    )
+        # populates form with values from
+        # venue with ID <venue_id>
+        return render_template(
+            'forms/edit_venue.html',
+            form=form,
+            venue=venue
+        )
+    except Exception as e:
+        print(e)
+        flash(f'An error occurred: {e}.')
+        return render_template('pages/home.html')
 
 
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
