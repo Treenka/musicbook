@@ -217,25 +217,14 @@ def create_venue_submission():
     # modify data to be the data object returned from db insertion
 
     try:
-        name = request.form.get('name')
-        city = request.form.get('city')
-        state = request.form.get('state')
-        address = request.form.get('address')
-        phone = request.form.get('phone')
-        genres = request.form.getlist('genres')
-        facebook_link = request.form.get('facebook_link')
-        image_link = request.form.get('image_link')
-        website_link = request.form.get('website_link')
-        seeking_talent = request.form.get('seeking_talent')
-        seeking_description = request.form.get(
-            'seeking_description'
-        )
+        form = VenueForm(request.form)
+        name = form.name.data
 
         genre_objects = []
         all_genre_names = [
             genre.name for genre in Genre.query.all()
         ]
-        for genre in genres:
+        for genre in form.genres.data:
             if genre in all_genre_names:
                 go = Genre.query.filter_by(name=genre).all()[0]
                 genre_objects.append(go)
@@ -254,32 +243,35 @@ def create_venue_submission():
                         go = Genre.query.filter_by(name=genre).all()[0]
                         genre_objects.append(go)
                     else:
-                        flash('An error occurred. Venue ' +
+                        flash('An error occurred with genres. Venue ' +
                               name + ' could not be listed.')
                         return render_template('pages/home.html')
-        if seeking_talent == 'y':
+        if form.seeking_talent.data == 'y':
             seeking_talent = True
         else:
             seeking_talent = False
 
-        new_venue = Venue(
-            name=name,
-            city=city,
-            state=state,
-            address=address,
-            phone=phone,
-            genres=genre_objects,
-            facebook_link=facebook_link,
-            website=website_link,
-            image_link=image_link,
-            seeking_talent=seeking_talent,
-            seeking_description=seeking_description
+        print(f'genres: {form.genres.data}')
+        print(f'genres: {type(form.genres.data)}')
 
+        new_venue = Venue(
+            name=form.name.data,
+            city=form.city.data,
+            state=form.state.data,
+            address=form.address.data,
+            phone=form.phone.data,
+            genres=genre_objects,
+            facebook_link=form.facebook_link.data,
+            image_link=form.image_link.data,
+            website=form.website_link.data,
+            seeking_talent=seeking_talent,
+            seeking_description=form.seeking_description.data
         )
 
         db.session.add(new_venue)
         db.session.commit()
         success = True
+
     except Exception as e:
         print(e)
         db.session.rollback()
