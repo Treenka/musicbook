@@ -478,26 +478,66 @@ def edit_artist_submission(artist_id):
     # take values from the form submitted, and update existing
     # artist record with ID <artist_id> using the new attributes
 
-    artist_to_edit = Artist.query.get(artist_id)
-    artist_to_edit.name = request.form.get("name")
-    artist_to_edit.city = request.form.get('city')
-    artist_to_edit.state = request.form.get('state')
-    artist_to_edit.phone = request.form.get('phone')
-    artist_to_edit.genres = request.form.getlist('genres')
-    artist_to_edit.facebook_link = request.form.get('facebook_link')
-    artist_to_edit.image_link = request.form.get('image_link')
-    artist_to_edit.website = request.form.get('website_link')
-    artist_to_edit.seeking_venue = request.form.get('seeking_venue')
-    artist_to_edit.seeking_description = request.form.get(
-        'seeking_description'
-    )
+    try:
+        form = ArtistForm(request.form)
+        name = form.name.data
 
-    return redirect(
-        url_for(
-            'show_artist',
-            artist_id=artist_id
-        )
-    )
+        # Add new genres to the db
+        # create a list of genre objects
+
+        genre_objects = []
+
+        for genre in form.genres.data:
+            if genre not in [gen.name for gen in Genre.query.all()]:
+                try:
+                    new_genre = Genre(name=genre)
+                    db.session.add(new_genre)
+                    genre_objects.append(new_genre)
+                except Exception as e:
+                    print(e)
+                    flash('An error occured adding the new genre')
+                    return render_template('pages/home.html')
+            else:
+                genre_objects.append(
+                    Genre.query.filter(Genre.name == genre).all()[0])
+
+        if form.seeking_venue.data == 'y':
+            seeking_venue = True
+        else:
+            seeking_venue = False
+
+        # Artist selected to be editted
+        artist_to_edit = Artist.query.get(artist_id)
+
+        artist_to_edit.name = form.name.data
+        artist_to_edit.city = form.city.data
+        artist_to_edit.state = form.state.data
+        artist_to_edit.phone = form.phone.data
+        artist_to_edit.genres = genre_objects
+        artist_to_edit.facebook_link = form.facebook_link.data
+        artist_to_edit.image_link = form.image_link.data
+        artist_to_edit.website = form.website_link.data
+        artist_to_edit.seeking_venue = seeking_venue
+        artist_to_edit.seeking_description = form.seeking_description.data
+
+        db.session.commit()
+        success = True
+    except Exception as e:
+        print(e)
+        success = False
+        error_message = e
+    finally:
+        db.session.close()
+        if success:
+            return redirect(
+                url_for(
+                    'show_artist',
+                    artist_id=artist_id
+                )
+            )
+        else:
+            flash(f'Error: {error_message} occurred. {name} was not editted.')
+            return render_template('pages/home.html')
 
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
