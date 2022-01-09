@@ -312,7 +312,6 @@ def delete_venue(venue_id):
     try:
 
         current_venue = Venue.query.get(venue_id)
-        print(f'This is the current venue:{current_venue}')
         name = current_venue.name
         db.session.delete(current_venue)
         db.session.commit()
@@ -329,10 +328,6 @@ def delete_venue(venue_id):
     finally:
         db.session.close()
         return jsonify(delete_response)
-    # BC: Implement a button to delete a
-    # Venue on a Venue Page, have it so that
-    # clicking that button delete it from
-    # the db then redirect the user to the homepage
 
 #  ----------------------------------------------------------------
 #  Artists
@@ -341,7 +336,7 @@ def delete_venue(venue_id):
 
 @app.route('/artists')
 def artists():
-    # replace with real data returned from querying the database
+    # displays artist data returned from the db
     artist_data = []
 
     for artist in Artist.query.all():
@@ -354,43 +349,24 @@ def artists():
 
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
-    # implement search on artists with partial
-    # string search. Ensure it is case-insensitive.
-    # seach for "A" should return "Guns N Petals",
-    # "Matt Quevado", and "The Wild Sax Band".
-    # search for "band" should return "The Wild Sax Band".
+    # search for artists with partial
+    # string search.  It is case-insensitive.
 
-    # create list to hold the found artists
-    search_list = []
     # variable to hold the search term
     text = request.form.get('search_term', '')
+
     # variable to hold the amount of artists found
-    count = 0
+    results = Artist.query.filter(Artist.name.ilike('%' + text + '%')).all()
 
-    # add the artists that match the search terms
-    # to the search_list
-    for artist in Artist.query.all():
-        if text.lower() in artist.name.lower():
-            search_list.append(artist)
-            count += 1
+    response = {
+        'count': len(results),
+        'data': []
+    }
 
-    # create variable to hold the data of search objects
-    response = {}
-    response['count'] = count
-    response['data'] = []
-
-    for artist in search_list:
+    for artist in results:
         response['data'].append({
             'id': artist.id,
-            'name': artist.name,
-            'num_upcoming_shows': len(
-                list(
-                    filter(
-                        lambda x: x.start_time > datetime.today(),
-                        artist.shows
-                    )
-                )
-            )
+            'name': artist.name
         })
 
     return render_template(
