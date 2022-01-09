@@ -567,18 +567,56 @@ def edit_venue_submission(venue_id):
     # venue record with ID <venue_id>
     # using the new attributes
 
-    venue = Venue.query.get(venue_id)
-    venue.name = request.form.get('name')
-    venue.city = request.form.get('city')
-    venue.state = request.form.get('state')
-    venue.phone = request.form.get('phone')
-    venue.genres = request.form.getlist('genres')
-    venue.facebook_link = request.form.get('facebook_link')
-    venue.image_link = request.form.get('image_link')
-    venue.website = request.form.get('website_link')
-    venue.seeking_venue = request.form.get('seeking_venue')
-    venue.seeking_description = request.form.get('seeking_description')
-    return redirect(url_for('show_venue', venue_id=venue_id))
+    try:
+        venue = Venue.query.get(venue_id)
+        form = VenueForm(request.form)
+        # check if the genres are in the db
+        # add the genre objects to a list
+
+        genre_objects = []
+
+        for genre in form.genres.data:
+            if genre not in [gen.name for gen in Genre.query.all()]:
+                try:
+                    new_genre = Genre(name=genre)
+                    db.session.add(new_genre)
+                    genre_objects.append(new_genre)
+                except Exception as e:
+                    print(e)
+                    flash('An error occured adding a genre: {e}')
+            else:
+                genre_objects.append(Genre.query.filter(
+                    Genre.name == genre).all()[0])
+
+        if form.seeking_talent.data == 'y':
+            seeking_talent = True
+        else:
+            seeking_talent = False
+
+        venue.name = form.name.data
+        venue.city = form.city.data
+        venue.state = form.state.data
+        venue.phone = form.phone.data
+        venue.genres = genre_objects
+        venue.facebook_link = form.facebook_link.data
+        venue.image_link = form.image_link.data
+        venue.website = form.website_link.data
+        venue.seeking_talent = seeking_talent
+        venue.seeking_description = form.seeking_description.data
+
+        db.session.commit()
+        success = True
+    except Exception as e:
+        print(e)
+        success = False
+        error_message = e
+    finally:
+        db.session.close()
+        if success:
+            return redirect(url_for('show_venue', venue_id=venue_id))
+        else:
+            flash(f'An error occurred: {error_message}')
+            return render_template('pages/home.html')
 
 #  ----------------------------------------------------------------
 #  Create Artist
