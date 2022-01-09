@@ -698,10 +698,6 @@ def create_artist_submission():
                   name + ' could not be listed.')
             return render_template('pages/home.html')
 
-    # on successful db insert, flash success
-    flash('Artist ' + request.form['name'] + ' was successfully listed!')
-    # on unsuccessful db insert, flash an error instead.
-    return render_template('pages/home.html')
 
 #  ----------------------------------------------------------------
 #  Shows
@@ -749,18 +745,13 @@ def create_show_submission():
     # insert form data as a new Show record in the db, instead
 
     try:
-        # artist_id
-        artist_id = request.form.get("artist_id")
-        # venue_id
-        venue_id = request.form.get("venue_id")
-        # start time
-        start_time = request.form.get("start_time")
+        form = ShowForm(request.form)
 
         db.session.add(
             Show(
-                venue_id=venue_id,
-                artist_id=artist_id,
-                start_time=start_time
+                venue_id=form.venue_id.data,
+                artist_id=form.artist_id.data,
+                start_time=form.start_time.data
             )
         )
         db.session.commit()
